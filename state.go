@@ -13,9 +13,9 @@ import (
 	"time"
 
 	"aead.dev/mem"
-	"github.com/minio/kes-go"
 	"github.com/minio/kes/internal/api"
 	"github.com/minio/kes/internal/metric"
+	"github.com/minio/kms-go/kes"
 )
 
 type serverState struct {
@@ -146,6 +146,14 @@ func initRoutes(s *Server, routeConfig map[string]RouteConfig) (*http.ServeMux, 
 			Timeout: 15 * time.Second,
 			Auth:    (*verifyIdentity)(&s.state),
 			Handler: api.HandlerFunc(s.decryptKey),
+		},
+		api.PathKeyHMAC: {
+			Method:  http.MethodPut,
+			Path:    api.PathKeyHMAC,
+			MaxBody: 1 * mem.MB,
+			Timeout: 15 * time.Second,
+			Auth:    (*verifyIdentity)(&s.state),
+			Handler: api.HandlerFunc(s.hmacKey),
 		},
 
 		api.PathPolicyDescribe: {

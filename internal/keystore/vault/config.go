@@ -49,16 +49,24 @@ type AppRole struct {
 	// mounted at arbitrary paths.
 	Engine string
 
+	// Namespace is the Vault namespace in which the AppRole
+	// authentication is performed. It can be used to authenticate
+	// in a different namespace compared to the secret engine
+	// namespace. For example, authenticate within the root
+	// namespace but use a team-specific namespace for the secret
+	// engine.
+	//
+	// If empty, the VaultKeyStore namespace is used, if set.
+	// A single "/" is treated as alias for the Vault root
+	// namespace such that no namespace header is sent as part
+	// of the request.
+	Namespace string
+
 	// ID is the AppRole authentication ID
 	ID string
 
 	// Secret is the AppRole authentication secret.
 	Secret string
-
-	// Retry is the duration after which another
-	// authentication attempt is performed once
-	// an authentication attempt failed.
-	Retry time.Duration
 }
 
 // Clone returns a copy of the AppRole auth.
@@ -67,10 +75,10 @@ func (a *AppRole) Clone() *AppRole {
 		return nil
 	}
 	return &AppRole{
-		Engine: a.Engine,
-		ID:     a.ID,
-		Secret: a.Secret,
-		Retry:  a.Retry,
+		Engine:    a.Engine,
+		Namespace: a.Namespace,
+		ID:        a.ID,
+		Secret:    a.Secret,
 	}
 }
 
@@ -87,16 +95,24 @@ type Kubernetes struct {
 	// mounted at arbitrary paths.
 	Engine string
 
+	// Namespace is the Vault namespace in which the Kubernetes
+	// authentication is performed. It can be used to authenticate
+	// in a different namespace compared to the secret engine
+	// namespace. For example, authenticate within the root
+	// namespace but use a team-specific namespace for the secret
+	// engine.
+	//
+	// If empty, the VaultKeyStore namespace is used, if set.
+	// A single "/" is treated as alias for the Vault root
+	// namespace such that no namespace header is sent as part
+	// of the request.
+	Namespace string
+
 	// Role is the JWT role.
 	Role string
 
 	// JWT is the issued authentication token.
 	JWT string
-
-	// Retry is the duration after which another
-	// authentication attempt is performed once
-	// an authentication attempt failed.
-	Retry time.Duration
 }
 
 // Clone returns a copy of the Kubernetes auth.
@@ -105,10 +121,10 @@ func (k *Kubernetes) Clone() *Kubernetes {
 		return nil
 	}
 	return &Kubernetes{
-		Engine: k.Engine,
-		Role:   k.Role,
-		JWT:    k.JWT,
-		Retry:  k.Retry,
+		Engine:    k.Engine,
+		Namespace: k.Namespace,
+		Role:      k.Role,
+		JWT:       k.JWT,
 	}
 }
 
