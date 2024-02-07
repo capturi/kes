@@ -4,27 +4,31 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/minio/kes"
 	kesdk "github.com/minio/kes-go"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"time"
 )
 
+// Store is a mongodb secret store
 type Store struct {
 	client     *mongo.Client
 	collection *mongo.Collection
 	ctx        context.Context
 }
 
+// KesMongoModel is the model for the mongodb database documents
 type KesMongoModel struct {
 	Id      string    `bson:"_id"`
 	Value   []byte    `bson:"value"`
 	Created time.Time `bson:"created"`
 }
 
+// Config is a structure containing configuration options for connecting to MongoDB.
 type Config struct {
 	ConnectionString string
 
@@ -33,8 +37,8 @@ type Config struct {
 	Collection string
 }
 
+// Connect establishes a connection to mongodb and returns a new Store
 func Connect(ctx context.Context, config *Config) (*Store, error) {
-
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.ConnectionString))
 	if err != nil {
 		return nil, err
@@ -48,6 +52,7 @@ func Connect(ctx context.Context, config *Config) (*Store, error) {
 	}, nil
 }
 
+// Close closes the connection to mongodb
 func (s Store) Close() error {
 	if err := s.client.Disconnect(s.ctx); err != nil {
 		return err
@@ -70,7 +75,6 @@ func (s Store) Status(ctx context.Context) (kes.KeyStoreState, error) {
 	return kes.KeyStoreState{
 		Latency: time.Since(start),
 	}, nil
-
 }
 
 // Create creates a new document with the given name as id
@@ -95,8 +99,8 @@ func (s Store) Create(ctx context.Context, name string, value []byte) error {
 	return nil
 }
 
+// Delete deletes the document with the given name as id
 func (s Store) Delete(ctx context.Context, name string) error {
-
 	filter := bson.D{{
 		"_id", name,
 	}}
@@ -113,6 +117,7 @@ func (s Store) Delete(ctx context.Context, name string) error {
 	return nil
 }
 
+// Get returns the value associated with the given name
 func (s Store) Get(ctx context.Context, name string) ([]byte, error) {
 	filter := bson.D{{
 		"_id", name,
@@ -129,8 +134,8 @@ func (s Store) Get(ctx context.Context, name string) ([]byte, error) {
 	return document.Value, nil
 }
 
+// List returns a list of keys with the given prefix
 func (s Store) List(ctx context.Context, prefix string, n int) ([]string, string, error) {
-
 	filter := bson.D{}
 	if len(prefix) > 0 {
 		filter = bson.D{{"_id", bson.D{{"$regex", fmt.Sprintf("/^%s/", prefix)}}}}
