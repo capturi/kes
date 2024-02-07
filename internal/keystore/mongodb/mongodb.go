@@ -23,7 +23,7 @@ type Store struct {
 
 // KesMongoModel is the model for the mongodb database documents
 type KesMongoModel struct {
-	Id      string    `bson:"_id"`
+	ID      string    `bson:"_id"`
 	Value   []byte    `bson:"value"`
 	Created time.Time `bson:"created"`
 }
@@ -82,7 +82,7 @@ func (s Store) Status(ctx context.Context) (kes.KeyStoreState, error) {
 // It returns kes.ErrKeyExists if the id already exists
 func (s Store) Create(ctx context.Context, name string, value []byte) error {
 	document := KesMongoModel{
-		Id:      name,
+		ID:      name,
 		Value:   value,
 		Created: time.Now().UTC(),
 	}
@@ -102,7 +102,7 @@ func (s Store) Create(ctx context.Context, name string, value []byte) error {
 // Delete deletes the document with the given name as id
 func (s Store) Delete(ctx context.Context, name string) error {
 	filter := bson.D{{
-		"_id", name,
+		Key: "_id", Value: name,
 	}}
 
 	deleteOneResult, err := s.collection.DeleteOne(ctx, filter)
@@ -120,7 +120,7 @@ func (s Store) Delete(ctx context.Context, name string) error {
 // Get returns the value associated with the given name
 func (s Store) Get(ctx context.Context, name string) ([]byte, error) {
 	filter := bson.D{{
-		"_id", name,
+		Key: "_id", Value: name,
 	}}
 
 	var document KesMongoModel
@@ -138,7 +138,7 @@ func (s Store) Get(ctx context.Context, name string) ([]byte, error) {
 func (s Store) List(ctx context.Context, prefix string, n int) ([]string, string, error) {
 	filter := bson.D{}
 	if len(prefix) > 0 {
-		filter = bson.D{{"_id", bson.D{{"$regex", fmt.Sprintf("/^%s/", prefix)}}}}
+		filter = bson.D{{Key: "_id", Value: bson.D{{Key: "$regex", Value: fmt.Sprintf("/^%s/", prefix)}}}}
 	}
 
 	findOpts := &options.FindOptions{}
@@ -163,8 +163,8 @@ func (s Store) List(ctx context.Context, prefix string, n int) ([]string, string
 		}
 
 		cnt++
-		results = append(results, document.Id)
-		lastPrefix = document.Id
+		results = append(results, document.ID)
+		lastPrefix = document.ID
 
 		if n > 0 && cnt == n {
 			break

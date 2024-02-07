@@ -10,12 +10,13 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
-	"github.com/minio/kes/internal/keystore/mongodb"
 	"io"
 	"log/slog"
 	"os"
 	"slices"
 	"time"
+
+	"github.com/minio/kes/internal/keystore/mongodb"
 
 	"github.com/minio/kes"
 	"github.com/minio/kes/internal/https"
