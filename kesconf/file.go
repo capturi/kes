@@ -10,6 +10,7 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
+	"github.com/minio/kes/internal/keystore/mongodb"
 	"io"
 	"log/slog"
 	"os"
@@ -823,5 +824,24 @@ func (s *EntrustKeyControlKeyStore) Connect(ctx context.Context) (kes.KeyStore, 
 		TLS: &tls.Config{
 			RootCAs: rootCAs,
 		},
+	})
+}
+
+// MongoDbKeyStore is a structure containing the
+// configuration for Mongodb.
+type MongoDbKeyStore struct {
+	ConnectionString string
+
+	Database string
+
+	Collection string
+}
+
+// Connect returns a kv.Store that stores key-value pairs on AWS SecretsManager.
+func (s *MongoDbKeyStore) Connect(ctx context.Context) (kes.KeyStore, error) {
+	return mongodb.Connect(ctx, &mongodb.Config{
+		ConnectionString: s.ConnectionString,
+		Database:         s.Database,
+		Collection:       s.Collection,
 	})
 }

@@ -16,6 +16,7 @@ import (
 type Store struct {
 	client     *mongo.Client
 	collection *mongo.Collection
+	ctx        context.Context
 }
 
 type KesMongoModel struct {
@@ -24,14 +25,22 @@ type KesMongoModel struct {
 	Created time.Time `bson:"created"`
 }
 
-func NewMongoStore(uri string, database string, collectionName string) (*Store, error) {
+type Config struct {
+	ConnectionString string
 
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(uri))
+	Database string
+
+	Collection string
+}
+
+func Connect(ctx context.Context, config *Config) (*Store, error) {
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.ConnectionString))
 	if err != nil {
 		return nil, err
 	}
 
-	collection := client.Database(database).Collection(collectionName)
+	collection := client.Database(config.Database).Collection(config.Collection)
 
 	return &Store{
 		client:     client,
@@ -40,7 +49,7 @@ func NewMongoStore(uri string, database string, collectionName string) (*Store, 
 }
 
 func (s Store) Close() error {
-	if err := s.client.Disconnect(context.Background()); err != nil {
+	if err := s.client.Disconnect(s.ctx); err != nil {
 		return err
 	}
 
@@ -53,7 +62,7 @@ func (s Store) Close() error {
 // mongodb is accessible.
 func (s Store) Status(ctx context.Context) (kes.KeyStoreState, error) {
 	start := time.Now()
-	err := s.client.Ping(context.Background(), readpref.Primary())
+	err := s.client.Ping(s.ctx, readpref.Primary())
 	if err != nil {
 		return kes.KeyStoreState{}, err
 	}
@@ -74,7 +83,7 @@ func (s Store) Create(ctx context.Context, name string, value []byte) error {
 		Created: time.Now().UTC(),
 	}
 
-	_, err := s.collection.InsertOne(context.Background(), document)
+	_, err := s.collection.InsertOne(s.ctx, document)
 	if err != nil {
 		if mongo.IsDuplicateKeyError(err) {
 			return kesdk.ErrKeyExists
@@ -121,16 +130,25 @@ func (s Store) Get(ctx context.Context, name string) ([]byte, error) {
 }
 
 func (s Store) List(ctx context.Context, prefix string, n int) ([]string, string, error) {
-	filter := bson.D{{"_id", bson.D{{"$regex", fmt.Sprintf("/^%s/", prefix)}}}}
 
-	cursor, err := s.collection.Find(ctx, filter)
+	filter := bson.D{}
+	if len(prefix) > 0 {
+		filter = bson.D{{"_id", bson.D{{"$regex", fmt.Sprintf("/^%s/", prefix)}}}}
+	}
+
+	findOpts := &options.FindOptions{}
+	if n > 0 {
+		findOpts.SetLimit(int64(n))
+	}
+
+	cursor, err := s.collection.Find(ctx, filter, findOpts)
 	if err != nil {
 		return nil, "", err
 	}
 	defer cursor.Close(ctx)
 
 	cnt := 0
-	results := make([]string, n)
+	results := make([]string, 0)
 	lastPrefix := ""
 	for cursor.Next(ctx) {
 		var document KesMongoModel
@@ -143,7 +161,7 @@ func (s Store) List(ctx context.Context, prefix string, n int) ([]string, string
 		results = append(results, document.Id)
 		lastPrefix = document.Id
 
-		if cnt == n {
+		if n > 0 && cnt == n {
 			break
 		}
 	}

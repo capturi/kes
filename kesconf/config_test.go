@@ -285,3 +285,34 @@ func TestReadServerConfigYAML_AWS_NoCredentials(t *testing.T) {
 		t.Fatalf("Invalid secret key: got '%s' - want '%s'", aws.SessionToken, SessionToken)
 	}
 }
+
+func TestReadServerConfigYAML_MongoDB(t *testing.T) {
+	const (
+		Filename = "./testdata/mongodb.yml"
+
+		ConnectionString = "mongodb://localhost:27017/admin"
+		Database         = "kes"
+		Collection       = "keys"
+	)
+
+	config, err := ReadFile(Filename)
+	if err != nil {
+		t.Fatalf("Failed to read file '%s': %v", Filename, err)
+	}
+
+	mongodb, ok := config.KeyStore.(*MongoDbKeyStore)
+	if !ok {
+		var want *MongoDbKeyStore
+		t.Fatalf("Invalid keystore: got type '%T' - want type '%T'", config.KeyStore, want)
+	}
+	if mongodb.ConnectionString != ConnectionString {
+		t.Fatalf("Invalid connectionstring: got '%s' - want '%s'", mongodb.ConnectionString, ConnectionString)
+	}
+	if mongodb.Database != Database {
+		t.Fatalf("Invalid database: got '%s' - want '%s'", mongodb.Database, Database)
+	}
+	if mongodb.Collection != Collection {
+		t.Fatalf("Invalid collection: got '%s' - want '%s'", mongodb.Collection, Collection)
+	}
+
+}

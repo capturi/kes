@@ -209,6 +209,9 @@ type ymlFile struct {
 			} `yaml:"keycontrol"`
 		} `yaml:"entrust"`
 		MongoDb *struct {
+			ConnectionString env[string] `yaml:"connection_string"`
+			Database         env[string] `yaml:"database"`
+			Collection       env[string] `yaml:"collection"`
 		} `yaml:"mongodb"`
 	} `yaml:"keystore"`
 }
@@ -644,6 +647,27 @@ func ymlToKeyStore(y *ymlFile) (KeyStore, error) {
 			Username: y.KeyStore.Entrust.KeyControl.Login.Username.Value,
 			Password: y.KeyStore.Entrust.KeyControl.Login.Password.Value,
 			CAPath:   y.KeyStore.Entrust.KeyControl.TLS.CAPath.Value,
+		}
+	}
+	// MongoDB
+	if y.KeyStore.MongoDb != nil {
+		if keystore != nil {
+			return nil, errors.New("kesconf: invalid keystore config: more than once keystore specified")
+		}
+		if y.KeyStore.MongoDb.ConnectionString.Value == "" {
+			return nil, errors.New("kesconf: invalid mongodb keystore: no connectionstring specified")
+		}
+		if y.KeyStore.MongoDb.Collection.Value == "" {
+			return nil, errors.New("kesconf: invalid mongodb keystore: no collection specified")
+		}
+		if y.KeyStore.MongoDb.Database.Value == "" {
+			return nil, errors.New("kesconf: invalid mongodb keystore: no database specified")
+		}
+
+		keystore = &MongoDbKeyStore{
+			ConnectionString: y.KeyStore.MongoDb.ConnectionString.Value,
+			Database:         y.KeyStore.MongoDb.Database.Value,
+			Collection:       y.KeyStore.MongoDb.Collection.Value,
 		}
 	}
 
