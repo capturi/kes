@@ -314,5 +314,4 @@ func TestReadServerConfigYAML_MongoDB(t *testing.T) {
 	if mongodb.Collection != Collection {
 		t.Fatalf("Invalid collection: got '%s' - want '%s'", mongodb.Collection, Collection)
 	}
-
 }

@@ -67,7 +67,7 @@ func (s Store) Close() error {
 // mongodb is accessible.
 func (s Store) Status(ctx context.Context) (kes.KeyStoreState, error) {
 	start := time.Now()
-	err := s.client.Ping(s.ctx, readpref.Primary())
+	err := s.client.Ping(ctx, readpref.Primary())
 	if err != nil {
 		return kes.KeyStoreState{}, err
 	}
@@ -87,7 +87,7 @@ func (s Store) Create(ctx context.Context, name string, value []byte) error {
 		Created: time.Now().UTC(),
 	}
 
-	_, err := s.collection.InsertOne(s.ctx, document)
+	_, err := s.collection.InsertOne(ctx, document)
 	if err != nil {
 		if mongo.IsDuplicateKeyError(err) {
 			return kesdk.ErrKeyExists
