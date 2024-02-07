@@ -206,6 +206,8 @@ type ymlFile struct {
 				} `yaml:"tls"`
 			} `yaml:"keycontrol"`
 		} `yaml:"entrust"`
+		MongoDb *struct {
+		} `yaml:"mongodb"`
 	} `yaml:"keystore"`
 }
 
