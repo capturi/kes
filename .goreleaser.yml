@@ -111,15 +111,11 @@ dockers:
   - '--platform=linux/arm64'
   - '--build-arg=TAG={{ replace .CommitDate ":" "-" }}'
 docker_manifests:
-- name_template: capturi/kes:{{ replace .CommitDate ":" "-" }}
-  image_templates:
-  - capturi/kes:{{ replace .CommitDate ":" "-" }}-amd64
-  - capturi/kes:{{ replace .CommitDate ":" "-" }}-arm64
 - name_template: ghcr.io/capturi/kes:{{ replace .CommitDate ":" "-" }}
   image_templates:
   - ghcr.io/capturi/kes:{{ replace .CommitDate ":" "-" }}-amd64
   - ghcr.io/capturi/kes:{{ replace .CommitDate ":" "-" }}-arm64
-- name_template: minio/kes:latest
+- name_template: ghcr.io/capturi/kes:latest
   image_templates:
-  - capturi/kes:{{ replace .CommitDate ":" "-" }}-amd64
-  - capturi/kes:{{ replace .CommitDate ":" "-" }}-arm64
+  - ghcr.io/capturi/kes:{{ replace .CommitDate ":" "-" }}-amd64
+  - ghcr.io/capturi/kes:{{ replace .CommitDate ":" "-" }}-arm64
