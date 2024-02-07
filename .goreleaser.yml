@@ -4,7 +4,7 @@ release:
    name_template: Release {{ replace .CommitDate ":" "-" }}
 
    github:
-    owner: minio
+    owner: capturi
     name: kes
 
 before:
@@ -69,7 +69,7 @@ changelog:
 
 dockers:
 - image_templates:
-  - minio/kes:{{ replace .CommitDate ":" "-" }}-amd64
+  - capturi/kes:{{ replace .CommitDate ":" "-" }}-amd64
   use: buildx
   dockerfile: Dockerfile
   extra_files:
@@ -79,7 +79,7 @@ dockers:
   - '--platform=linux/amd64'
   - '--build-arg=TAG={{ replace .CommitDate ":" "-" }}'
 - image_templates:
-  - quay.io/minio/kes:{{ replace .CommitDate ":" "-" }}-amd64
+  - ghcr.io/capturi/minio/kes:{{ replace .CommitDate ":" "-" }}-amd64
   use: buildx
   dockerfile: Dockerfile
   extra_files:
@@ -89,7 +89,7 @@ dockers:
   - '--platform=linux/amd64'
   - '--build-arg=TAG={{ replace .CommitDate ":" "-" }}'
 - image_templates:
-  - minio/kes:{{ replace .CommitDate ":" "-" }}-arm64
+  - capturi/kes:{{ replace .CommitDate ":" "-" }}-arm64
   use: buildx
   goarch: arm64
   dockerfile: Dockerfile
@@ -100,7 +100,7 @@ dockers:
   - '--platform=linux/arm64'
   - '--build-arg=TAG={{ replace .CommitDate ":" "-" }}'
 - image_templates:
-  - quay.io/minio/kes:{{ replace .CommitDate ":" "-" }}-arm64
+  - ghcr.io/capturi/kes:{{ replace .CommitDate ":" "-" }}-arm64
   use: buildx
   goarch: arm64
   dockerfile: Dockerfile
@@ -111,15 +111,15 @@ dockers:
   - '--platform=linux/arm64'
   - '--build-arg=TAG={{ replace .CommitDate ":" "-" }}'
 docker_manifests:
-- name_template: minio/kes:{{ replace .CommitDate ":" "-" }}
+- name_template: capturi/kes:{{ replace .CommitDate ":" "-" }}
   image_templates:
-  - minio/kes:{{ replace .CommitDate ":" "-" }}-amd64
-  - minio/kes:{{ replace .CommitDate ":" "-" }}-arm64
-- name_template: quay.io/minio/kes:{{ replace .CommitDate ":" "-" }}
+  - capturi/kes:{{ replace .CommitDate ":" "-" }}-amd64
+  - capturi/kes:{{ replace .CommitDate ":" "-" }}-arm64
+- name_template: ghcr.io/capturi/kes:{{ replace .CommitDate ":" "-" }}
   image_templates:
-  - quay.io/minio/kes:{{ replace .CommitDate ":" "-" }}-amd64
-  - quay.io/minio/kes:{{ replace .CommitDate ":" "-" }}-arm64
+  - ghcr.io/capturi/kes:{{ replace .CommitDate ":" "-" }}-amd64
+  - ghcr.io/capturi/kes:{{ replace .CommitDate ":" "-" }}-arm64
 - name_template: minio/kes:latest
   image_templates:
-  - minio/kes:{{ replace .CommitDate ":" "-" }}-amd64
-  - minio/kes:{{ replace .CommitDate ":" "-" }}-arm64
+  - capturi/kes:{{ replace .CommitDate ":" "-" }}-amd64
+  - capturi/kes:{{ replace .CommitDate ":" "-" }}-arm64
