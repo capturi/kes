@@ -1,0 +1,59 @@
+version: '3.3'
+services:
+  mongodb:
+    image: mongo
+    restart: always
+    ports:
+    - "27017:27017"
+    volumes:
+    - mongodbdata:/data/db mongo
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9445:9445"
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    command: server  --console-address ":9445" /data
+  createbuckets:
+    image: minio/mc:latest
+    restart: on-failure
+    depends_on:
+      - minio
+      - minioSlave
+    entrypoint: >
+      /bin/sh -e -c "
+      : Will restart until config succeeds;      
+      mc config host add master http://minio:9000 minio minio123;
+      mc config host add slave http://minioSlave:9000 minio minio123;
+      mc rb --force master/sync-test || true;
+      mc mb master/sync-test;
+      mc anonymous set download master/sync-test;
+      for bucket in capturi-ole-test development-asr development-audio-asr development-insights development-lattices development-phrases development-rebus-databus testbucket testbucket-hotonly; do         
+         mc rb --force master/$$bucket || true;         
+         mc mb master/$$bucket;         
+         mc anonymous set download master/$$bucket;
+         mc rb --force slave/$$bucket || true;         
+         mc mb slave/$$bucket;         
+         mc anonymous set download slave/$$bucket;
+      done
+      "
+  kes:
+    image: minio/kes:v0.22.3
+    volumes:
+      - type: bind
+        source: ./kes-config.yaml
+        target: /tmp/kes/server-config.yaml
+      - type: bind
+        source: ./kes-dev-cert-key.pem
+        target: /tmp/kes/certs/tls.key
+      - type: bind
+        source: ./kes-dev-cert.pem
+        target: /tmp/kes/certs/tls.crt
+    command: server --config /tmp/kes/server-config.yaml --auth off
+    ports:
+    - "7373:7373"
+volumes:
+  mongodbdata: {}
+  config: {}
