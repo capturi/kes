@@ -46,7 +46,7 @@ services:
         source: ./kes-config.yaml
         target: /tmp/kes/server-config.yaml
       - type: bind
-        source: ./kes-dev-cert-key.pem
+        source:kes-dev-cert-key.pem
         target: /tmp/kes/certs/tls.key
       - type: bind
         source: ./kes-dev-cert.pem
